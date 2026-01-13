@@ -1,0 +1,49 @@
+services:
+  carrot2:
+    build:
+      context: .
+      args:
+        CARROT2_VERSION: 4.8.4
+    image: carrot2:4.8.4
+    restart: unless-stopped
+    volumes:
+      - carrot2-data:/opt/carrot2/data
+    # Do NOT publish ports; cloudflared will reach it over the Docker network.
+    ports:
+      - "8080"
+    environment:
+      # Optional JVM sizing
+      JAVA_TOOL_OPTIONS: "-Xms512m -Xmx2g"
+    healthcheck:
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+      start_interval: 5s
+    networks:
+      - carrot2-net  
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN_FILE: /run/secrets/tunnel_token
+    secrets:
+      - tunnel_token
+    depends_on:
+      carrot2:
+        condition: service_healthy
+    networks:
+      - carrot2-net
+
+networks:
+  carrot2-net:
+    driver: bridge
+
+volumes:
+  carrot2-data:
+
+secrets:
+  tunnel_token:
+    file: .secrets/tunnel_token.txt
