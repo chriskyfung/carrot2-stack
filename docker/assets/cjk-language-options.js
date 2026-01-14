@@ -49,6 +49,25 @@
         }
       },
 
+      // Config for web-interface-specific dropdowns (e.g., web:language).
+      web: {
+        "web:language": {
+          "chinese": [{ text: "Chinese", value: "zh" }],
+          "japanese": [{ text: "Japanese", value: "ja" }],
+          "korean": [{ text: "Korean", value: "ko" }]
+        },
+        "web:country": {
+          "chinese": [
+            { text: "China", value: "CN" },
+            { text: "Hong Kong", value: "HK" },
+            { text: "Taiwan", value: "TW" }
+          ],
+          "japanese": [{ text: "Japan", value: "JP" }],
+          "korean": [{ text: "South Korea", value: "KR" }]
+        }
+      }
+    };
+
     const enabled = CONFIG.enabledExtensionsString.split(',').map(s => s.trim()).filter(Boolean);
 
     // If no extensions are enabled or the placeholder wasn't replaced, do nothing.
@@ -83,7 +102,38 @@
       });
     };
 
+    /**
+     * Populates options for web-related selectors from the WEB_CONFIG.
+     */
+    const populateWebOptions = () => {
+      for (const selectorId in CONFIG.web) {
+        const section = document.getElementById(selectorId);
+        if (section) {
+          const select = section.querySelector('select');
+          if (select && !processedSelects.has(select)) {
+            const optionGroup = CONFIG.web[selectorId];
+            let optionsAdded = false;
+
+            enabled.forEach(ext => {
+              if (optionGroup[ext]) {
+                optionGroup[ext].forEach(option => {
+                  appendOption(select, option.text, option.value);
+                  optionsAdded = true;
+                });
+              }
+            });
+
+            if (optionsAdded) {
+              sortOptions(select);
+            }
+            processedSelects.add(select);
+          }
+        }
+      }
+    };
+
     populateAlgorithmLanguages();
+    populateWebOptions();
   };
 
   if (document.readyState === 'loading') {
