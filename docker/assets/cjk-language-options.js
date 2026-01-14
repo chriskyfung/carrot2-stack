@@ -5,74 +5,85 @@
 (function() {
   'use strict';
 
+  /**
+   * Appends a new option to a select element, avoiding duplicates.
+   */
+  function appendOption(select, text, value) {
+    // Avoid adding duplicate options by checking existing values.
+    if (Array.from(select.options).some(opt => opt.value === value)) {
+      return;
+    }
+    const newOption = new Option(text, value);
+    select.add(newOption);
+  }
+
+  /**
+   * Sorts options in a select element alphabetically by text, preserving the selection.
+   */
+  function sortOptions(select) {
+    const selectedValue = select.value;
+    const options = Array.from(select.options);
+
+    options.sort((a, b) => a.text.localeCompare(b.text, undefined, {
+      sensitivity: 'base'
+    }));
+
+    select.innerHTML = '';
+    options.forEach(opt => select.add(opt));
+    select.value = selectedValue; // Restore selection
+  }
+
   const run = () => {
-    // Placeholder will be replaced by Docker's sed command during build.
-    const enabledExtensions = "__CARROT2_LANG_EXTENSIONS__";
+    // Central configuration for all selectors and options.
+    const CONFIG = {
+      // This placeholder is replaced by Docker's sed command during build.
+      enabledExtensionsString: "__CARROT2_LANG_EXTENSIONS__",
 
-    const langMap = {
-      "chinese": ["Chinese-Simplified", "Chinese-Traditional"],
-      "japanese": ["Japanese"],
-      "korean": ["Korean"]
-    };
+      // Config for algorithm-specific language dropdowns (e.g., kmeans:language).
+      algorithmLanguages: {
+        selectors: ["kmeans:language", "lingo:language", "stc:language"],
+        options: {
+          "chinese": ["Chinese-Simplified", "Chinese-Traditional"],
+          "japanese": ["Japanese"],
+          "korean": ["Korean"]
+        }
+      },
 
-    const languagesToAdd = enabledExtensions.split(',')
-      .map(ext => ext.trim())
-      .filter(ext => langMap[ext])
-      .flatMap(ext => langMap[ext]);
+    const enabled = CONFIG.enabledExtensionsString.split(',').map(s => s.trim()).filter(Boolean);
 
-    if (languagesToAdd.length === 0) {
+    // If no extensions are enabled or the placeholder wasn't replaced, do nothing.
+    if (enabled.length === 0 || CONFIG.enabledExtensionsString.startsWith("__CARROT2")) {
       return;
     }
 
-    const algorithms = ["kmeans", "lingo", "stc"];
     const processedSelects = new Set();
 
-    // Function to append a new option to a select element.
-    function appendOption(select, text, value) {
-      if (Array.from(select.options).some(opt => opt.value === value)) {
-        return; // Avoid adding duplicate options
-      }
-      const newOption = new Option(text, value);
-      select.add(newOption);
-    }
+    /**
+     * Populates language options for algorithms like Lingo, STC, etc.
+     */
+    const populateAlgorithmLanguages = () => {
+      const languagesToAdd = enabled
+        .filter(ext => CONFIG.algorithmLanguages.options[ext])
+        .flatMap(ext => CONFIG.algorithmLanguages.options[ext]);
 
-    // Function to sort options in a select element alphabetically.
-    function sortOptions(select) {
-      const selectedValue = select.value;
-      const options = Array.from(select.options);
-
-      options.sort((a, b) => a.text.localeCompare(b.text, undefined, {
-        sensitivity: 'base'
-      }));
-
-      select.innerHTML = '';
-      options.forEach(opt => select.add(opt));
-      select.value = selectedValue; // Restore selection
-    }
-
-    // Function to add languages to a specific select element.
-    function addLanguagesToSelect(select) {
-      if (!select || processedSelects.has(select)) {
+      if (languagesToAdd.length === 0) {
         return;
       }
 
-      languagesToAdd.forEach(lang => {
-        appendOption(select, lang, lang);
+      CONFIG.algorithmLanguages.selectors.forEach(selectorId => {
+        const section = document.getElementById(selectorId);
+        if (section) {
+          const select = section.querySelector('select');
+          if (select && !processedSelects.has(select)) {
+            languagesToAdd.forEach(lang => appendOption(select, lang, lang));
+            sortOptions(select);
+            processedSelects.add(select);
+          }
+        }
       });
+    };
 
-      sortOptions(select);
-      processedSelects.add(select);
-    }
-
-    // Also, try to find the elements on initial load, in case they're already there.
-    algorithms.forEach(algorithm => {
-      const selectId = `${algorithm}:language`;
-      const section = document.getElementById(selectId);
-      if (section) {
-        const select = section.querySelector('select');
-        addLanguagesToSelect(select);
-      }
-    });
+    populateAlgorithmLanguages();
   };
 
   if (document.readyState === 'loading') {
