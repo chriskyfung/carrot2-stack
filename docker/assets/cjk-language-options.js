@@ -91,14 +91,18 @@
 
       CONFIG.algorithmLanguages.selectors.forEach(selectorId => {
         const section = document.getElementById(selectorId);
-        if (section) {
-          const select = section.querySelector('select');
-          if (select && !processedSelects.has(select)) {
-            languagesToAdd.forEach(lang => appendOption(select, lang, lang));
-            sortOptions(select);
-            processedSelects.add(select);
-          }
+        if (!section) {
+          return;
         }
+
+        const select = section.querySelector('select');
+        if (!select || processedSelects.has(select)) {
+          return;
+        }
+
+        languagesToAdd.forEach(lang => appendOption(select, lang, lang));
+        sortOptions(select);
+        processedSelects.add(select);
       });
     };
 
@@ -108,27 +112,31 @@
     const populateWebOptions = () => {
       for (const selectorId in CONFIG.web) {
         const section = document.getElementById(selectorId);
-        if (section) {
-          const select = section.querySelector('select');
-          if (select && !processedSelects.has(select)) {
-            const optionGroup = CONFIG.web[selectorId];
-            let optionsAdded = false;
-
-            enabled.forEach(ext => {
-              if (optionGroup[ext]) {
-                optionGroup[ext].forEach(option => {
-                  appendOption(select, option.text, option.value);
-                  optionsAdded = true;
-                });
-              }
-            });
-
-            if (optionsAdded) {
-              sortOptions(select);
-            }
-            processedSelects.add(select);
-          }
+        if (!section) {
+          continue;
         }
+
+        const select = section.querySelector('select');
+        if (!select || processedSelects.has(select)) {
+          continue;
+        }
+
+        const optionGroup = CONFIG.web[selectorId];
+        let optionsAdded = false;
+
+        enabled.forEach(ext => {
+          if (optionGroup[ext]) {
+            optionGroup[ext].forEach(option => {
+              appendOption(select, option.text, option.value);
+              optionsAdded = true;
+            });
+          }
+        });
+
+        if (optionsAdded) {
+          sortOptions(select);
+        }
+        processedSelects.add(select);
       }
     };
 
