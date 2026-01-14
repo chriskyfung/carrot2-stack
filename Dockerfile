@@ -45,6 +45,10 @@ ARG GITHUB_RAW_BASE_URL=https://raw.githubusercontent.com/carrot2/carrot2/master
 # Copy the helper script for downloading language extensions.
 COPY scripts/download_helpers.sh /build/download_helpers.sh
 
+# Copy and process the UI override script for CJK languages.
+COPY docker/assets/cjk-language-options.js /build/cjk-language-options.js
+RUN sed -i "s/__CARROT2_LANG_EXTENSIONS__/${CARROT2_LANG_EXTENSIONS}/g" /build/cjk-language-options.js
+
 # Set directories for language extensions
 ENV LIB_DIR="carrot2-${CARROT2_VERSION}/dcs/web/service/WEB-INF/lib"
 ENV RESOURCES_DIR="carrot2-${CARROT2_VERSION}/dcs/web/service/resources"
@@ -132,6 +136,10 @@ WORKDIR /opt/carrot2
 # Copy Carrot2 from the build stage and set permissions
 COPY --from=build --chown=carrot2:carrot2 /build/carrot2-${CARROT2_VERSION}/ /opt/carrot2/
 COPY --chown=carrot2:carrot2 carrot2.LICENSE carrot2.NOTICE ./
+
+# Copy and apply UI overrides for CJK languages.
+COPY --from=build --chown=carrot2:carrot2 /build/cjk-language-options.js /opt/carrot2/dcs/web/frontend/static/js/
+RUN sed -i 's|</body>|<script src="static/js/cjk-language-options.js"></script></body>|' /opt/carrot2/dcs/web/frontend/index.html
 
 # Create and set permissions for the data volume
 VOLUME /opt/carrot2/data
