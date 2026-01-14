@@ -23,6 +23,7 @@ ARG CARROT2_URL=https://github.com/carrot2/carrot2/releases/download/release%2F$
 
 ARG CARROT2_LANG_EXTENSIONS="chinese,japanese,korean"
 ARG LUCENE_CJK_VERSION=10.3.2
+ARG ICU4J_VERSION=77.1
 
 # Install dependencies for downloading and unpacking
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -62,6 +63,7 @@ RUN echo "${CARROT2_LANG_EXTENSIONS}" | grep -q -e "cjk" -e "chinese" && \
       download_jar "${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-chinese/${CARROT2_VERSION}/carrot2-lang-lucene-chinese-${CARROT2_VERSION}.jar"; \
       download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-smartcn/${LUCENE_CJK_VERSION}/lucene-analysis-smartcn-${LUCENE_CJK_VERSION}.jar"; \
       download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-icu/${LUCENE_CJK_VERSION}/lucene-analysis-icu-${LUCENE_CJK_VERSION}.jar"; \
+      download_jar "${MAVEN_BASE_URL}/com/ibm/icu/icu4j/${ICU4J_VERSION}/icu4j-${ICU4J_VERSION}.jar"; \
       base_resource_url="${GITHUB_RAW_BASE_URL}/lang/lucene-chinese/src/main/resources/org/carrot2/language/chinese"; \
       download_resource "${base_resource_url}/chinese-simplified.label-filters.json" "chinese-simplified.label-filters.json"; \
       download_resource "${base_resource_url}/chinese-simplified.word-filters.json" "chinese-simplified.word-filters.json"; \
