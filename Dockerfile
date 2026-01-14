@@ -3,22 +3,14 @@
 #
 # Carrot2 Dockerfile
 #
-# This Dockerfile builds a Carrot2 image.
+# This Dockerfile builds a Carrot2 image with optional language extensions.
 #
 
-# The core Carrot2 JAR supports only a limited set of popular languages. Additional modules add support for other languages and bring in extra resources required for these languages to work properly.
-# 
-# All language extensions live under the `org.carrot2.lang` artifact group namespace. Note that many of them come with sizeable own dependencies like [Apache Lucene](https://lucene.apache.org/) analyzers or dictionaries.
-# 
-# * `carrot2-lang-lucene-chinese`: Chinese (traditional and simplified).
-# * `carrot2-lang-lucene-japanese`: Japanese.
-# * `carrot2-lang-lucene-korean`: Korean.
+# The core Carrot2 JAR supports a limited set of popular languages.
+# Additional language modules can be added for Chinese, Japanese, and Korean.
 #
-# Extend the Docker image by adding the official org.carrot2.lang artifacts for Lucene-based analyzers and tokenizers.
-# You can find their information and dependencies at https://mvnrepository.com/artifact/org.carrot2.lang/carrot2-lang-lucene-chinese/4.8.4,
-# https://mvnrepository.com/artifact/org.carrot2.lang/carrot2-lang-lucene-japanese/4.8.4, and 
-# https://mvnrepository.com/artifact/org.carrot2.lang/carrot2-lang-lucene-korean/4.8.4.
-#
+# To install extensions, set the CARROT2_LANG_EXTENSIONS build argument, for example:
+# --build-arg CARROT2_LANG_EXTENSIONS="chinese,japanese"
 
 ################################################################################
 # Build stage: download and unpack Carrot2 distribution.
@@ -29,7 +21,7 @@ ARG CARROT2_VERSION=4.8.4
 ARG CARROT2_CHECKSUM_SHA256=31fc65c15e2f02e46e1c2e629ef72958d234e8d8d0b0dcc169d1409ccfc79002
 ARG CARROT2_URL=https://github.com/carrot2/carrot2/releases/download/release%2F${CARROT2_VERSION}/carrot2-${CARROT2_VERSION}.zip
 
-ARG CARROT2_LANG_EXTENSIONS="chinese japanese korean"
+ARG CARROT2_LANG_EXTENSIONS="chinese,japanese,korean"
 ARG LUCENE_CJK_VERSION=10.3.2
 
 # Install dependencies for downloading and unpacking
@@ -48,50 +40,66 @@ RUN curl -fsSL -o carrot2.zip "${CARROT2_URL}" && \
 
 # Add language extensions, if requested.
 ARG MAVEN_BASE_URL=https://repo1.maven.org/maven2
+ARG GITHUB_RAW_BASE_URL=https://raw.githubusercontent.com/carrot2/carrot2/master
 
-ARG CARROT2_LANG_CHINESE_URL=${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-chinese/${CARROT2_VERSION}/carrot2-lang-lucene-chinese-${CARROT2_VERSION}.jar
-ARG LUCENE_ANALYSIS_SMARTCN_URL=${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-smartcn/${LUCENE_CJK_VERSION}/lucene-analysis-smartcn-${LUCENE_CJK_VERSION}.jar
-ARG LUCENE_ANALYSIS_ICU_URL=${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-icu/${LUCENE_CJK_VERSION}/lucene-analysis-icu-${LUCENE_CJK_VERSION}.jar
-
-ARG CARROT2_LANG_JAPANESE_URL=${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-japanese/${CARROT2_VERSION}/carrot2-lang-lucene-japanese-${CARROT2_VERSION}.jar
-ARG LUCENE_ANALYSIS_KUROMOJI_URL=${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-kuromoji/${LUCENE_CJK_VERSION}/lucene-analysis-kuromoji-${LUCENE_CJK_VERSION}.jar
-
-ARG CARROT2_LANG_KOREAN_URL=${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-korean/${CARROT2_VERSION}/carrot2-lang-lucene-korean-${CARROT2_VERSION}.jar
-ARG LUCENE_ANALYSIS_NORI_URL=${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-nori/${LUCENE_CJK_VERSION}/lucene-analysis-nori-${LUCENE_CJK_VERSION}.jar
-
+# Download and install language extensions in a single layer
 RUN <<EOF
 set -e
 if [ -n "$CARROT2_LANG_EXTENSIONS" ]; then
     echo "CARROT2_LANG_EXTENSIONS is set to: ${CARROT2_LANG_EXTENSIONS}"
-    cd carrot2-${CARROT2_VERSION}/dcs/web/service/WEB-INF/lib
+    
+    LIB_DIR="carrot2-${CARROT2_VERSION}/dcs/web/service/WEB-INF/lib"
+    RESOURCES_DIR="carrot2-${CARROT2_VERSION}/dcs/web/service/resources"
 
+    # The sha256sum check format is 'hash  filename'. The two spaces are important.
     download_jar() {
         local url="$1"
         local filename=$(basename "$url")
         echo "Downloading $filename"
-        curl -fsSLO "$url"
-        curl -fsSLO "$url.sha256"
-        echo "$(cat $filename.sha256) $filename" | sha256sum -c -
-        rm "$filename.sha256"
+        curl -fsSL -o "${LIB_DIR}/${filename}" "$url"
+        curl -fsSL -o "${LIB_DIR}/${filename}.sha256" "$url.sha256"
+        echo "$(cat ${LIB_DIR}/${filename}.sha256)  ${LIB_DIR}/${filename}" | sha256sum -c -
+        rm "${LIB_DIR}/${filename}.sha256"
+    }
+
+    download_resource() {
+        local url="$1"
+        local filename="$2"
+        echo "Downloading resource $filename"
+        curl -fsSL -o "${RESOURCES_DIR}/${filename}" "$url"
     }
 
     if echo "${CARROT2_LANG_EXTENSIONS}" | grep -q -e "cjk" -e "chinese"; then
         echo "Installing Chinese language pack"
-        download_jar "${CARROT2_LANG_CHINESE_URL}"
-        download_jar "${LUCENE_ANALYSIS_SMARTCN_URL}"
-        download_jar "${LUCENE_ANALYSIS_ICU_URL}"
+        download_jar "${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-chinese/${CARROT2_VERSION}/carrot2-lang-lucene-chinese-${CARROT2_VERSION}.jar"
+        download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-smartcn/${LUCENE_CJK_VERSION}/lucene-analysis-smartcn-${LUCENE_CJK_VERSION}.jar"
+        download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-icu/${LUCENE_CJK_VERSION}/lucene-analysis-icu-${LUCENE_CJK_VERSION}.jar"
+        
+        base_resource_url="${GITHUB_RAW_BASE_URL}/lang/lucene-chinese/src/main/resources/org/carrot2/language/chinese"
+        download_resource "${base_resource_url}/chinese-simplified.label-filters.json" "chinese-simplified.label-filters.json"
+        download_resource "${base_resource_url}/chinese-simplified.word-filters.json" "chinese-simplified.word-filters.json"
+        download_resource "${base_resource_url}/chinese-traditional.label-filters.json" "chinese-traditional.label-filters.json"
+        download_resource "${base_resource_url}/chinese-traditional.word-filters.json" "chinese-traditional.word-filters.json"
     fi
 
     if echo "${CARROT2_LANG_EXTENSIONS}" | grep -q -e "cjk" -e "japanese"; then
         echo "Installing Japanese language pack"
-        download_jar "${CARROT2_LANG_JAPANESE_URL}"
-        download_jar "${LUCENE_ANALYSIS_KUROMOJI_URL}"
+        download_jar "${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-japanese/${CARROT2_VERSION}/carrot2-lang-lucene-japanese-${CARROT2_VERSION}.jar"
+        download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-kuromoji/${LUCENE_CJK_VERSION}/lucene-analysis-kuromoji-${LUCENE_CJK_VERSION}.jar"
+
+        base_resource_url="${GITHUB_RAW_BASE_URL}/lang/lucene-japanese/src/main/resources/org/carrot2/language/japanese"
+        download_resource "${base_resource_url}/japanese.label-filters.json" "japanese.label-filters.json"
+        download_resource "${base_resource_url}/japanese.word-filters.json" "japanese.word-filters.json"
     fi
 
     if echo "${CARROT2_LANG_EXTENSIONS}" | grep -q -e "cjk" -e "korean"; then
         echo "Installing Korean language pack"
-        download_jar "${CARROT2_LANG_KOREAN_URL}"
-        download_jar "${LUCENE_ANALYSIS_NORI_URL}"
+        download_jar "${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-korean/${CARROT2_VERSION}/carrot2-lang-lucene-korean-${CARROT2_VERSION}.jar"
+        download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-nori/${LUCENE_CJK_VERSION}/lucene-analysis-nori-${LUCENE_CJK_VERSION}.jar"
+
+        base_resource_url="${GITHUB_RAW_BASE_URL}/lang/lucene-korean/src/main/resources/org/carrot2/language/korean"
+        download_resource "${base_resource_url}/korean.label-filters.json" "korean.label-filters.json"
+        download_resource "${base_resource_url}/korean.word-filters.json" "korean.word-filters.json"
     fi
 fi
 EOF
@@ -117,7 +125,7 @@ ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${PATH}:${JAVA_HOME}/bin"
 ENV JAVA_OPTS="-Xms256m -Xmx1g"
 
-# Create a non-privileged user and group
+# Create a non-privileged user and group for enhanced security
 RUN addgroup --system carrot2 && \
     adduser \
         --system \
@@ -131,9 +139,9 @@ RUN addgroup --system carrot2 && \
 # Set workdir
 WORKDIR /opt/carrot2
 
-# Copy Carrot2 from the build stage
-COPY --from=build /build/carrot2-${CARROT2_VERSION}/ /opt/carrot2/
-COPY --chown=carrot2:carrot2 . .
+# Copy Carrot2 from the build stage and set permissions
+COPY --from=build --chown=carrot2:carrot2 /build/carrot2-${CARROT2_VERSION}/ /opt/carrot2/
+COPY --chown=carrot2:carrot2 carrot2.LICENSE carrot2.NOTICE ./
 
 # Create and set permissions for the data volume
 VOLUME /opt/carrot2/data
@@ -141,13 +149,13 @@ VOLUME /opt/carrot2/data
 # Expose Carrot2 port
 EXPOSE 8080
 
-# Set user
+# Switch to the non-privileged user
 USER carrot2
 
 WORKDIR /opt/carrot2/dcs
 # Run DCS (Workbench UI at /, docs at /doc, API at /service)
 CMD ["./dcs", "--port", "8080"]
 
-# Health check
+# Health check to verify service availability
 HEALTHCHECK --interval=30s --timeout=10s --retries=5 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/service/list || exit 1

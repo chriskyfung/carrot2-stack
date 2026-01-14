@@ -4,7 +4,11 @@ services:
       context: .
       args:
         CARROT2_VERSION: 4.8.4
-    image: carrot2:4.8.4
+        CARROT2_CHECKSUM_SHA256: 31fc65c15e2f02e46e1c2e629ef72958d234e8d8d0b0dcc169d1409ccfc79002
+        CARROT2_LANG_EXTENSIONS: "chinese,japanese,korean"
+      tags:
+        - carrot2:4.8.4-cjk
+    image: carrot2:4.8.4-cjk        
     restart: unless-stopped
     volumes:
       - carrot2-data:/opt/carrot2/data
