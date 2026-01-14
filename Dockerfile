@@ -42,67 +42,57 @@ RUN curl -fsSL -o carrot2.zip "${CARROT2_URL}" && \
 ARG MAVEN_BASE_URL=https://repo1.maven.org/maven2
 ARG GITHUB_RAW_BASE_URL=https://raw.githubusercontent.com/carrot2/carrot2/master
 
-# Download and install language extensions in a single layer
-RUN <<EOF
-set -e
-if [ -n "$CARROT2_LANG_EXTENSIONS" ]; then
-    echo "CARROT2_LANG_EXTENSIONS is set to: ${CARROT2_LANG_EXTENSIONS}"
-    
-    LIB_DIR="carrot2-${CARROT2_VERSION}/dcs/web/service/WEB-INF/lib"
-    RESOURCES_DIR="carrot2-${CARROT2_VERSION}/dcs/web/service/resources"
+# Copy the helper script for downloading language extensions.
+COPY scripts/download_helpers.sh /build/download_helpers.sh
 
-    # The sha256sum check format is 'hash  filename'. The two spaces are important.
-    download_jar() {
-        local url="$1"
-        local filename=$(basename "$url")
-        echo "Downloading $filename"
-        curl -fsSL -o "${LIB_DIR}/${filename}" "$url"
-        curl -fsSL -o "${LIB_DIR}/${filename}.sha256" "$url.sha256"
-        echo "$(cat ${LIB_DIR}/${filename}.sha256)  ${LIB_DIR}/${filename}" | sha256sum -c -
-        rm "${LIB_DIR}/${filename}.sha256"
-    }
+# Set directories for language extensions
+ENV LIB_DIR="carrot2-${CARROT2_VERSION}/dcs/web/service/WEB-INF/lib"
+ENV RESOURCES_DIR="carrot2-${CARROT2_VERSION}/dcs/web/service/resources"
 
-    download_resource() {
-        local url="$1"
-        local filename="$2"
-        echo "Downloading resource $filename"
-        curl -fsSL -o "${RESOURCES_DIR}/${filename}" "$url"
-    }
+# Install Chinese language pack if requested
+RUN echo "${CARROT2_LANG_EXTENSIONS}" | grep -q -e "cjk" -e "chinese" && \
+    ( \
+      set -e; \
+      . /build/download_helpers.sh; \
+      echo "Installing Chinese language pack"; \
+      download_jar "${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-chinese/${CARROT2_VERSION}/carrot2-lang-lucene-chinese-${CARROT2_VERSION}.jar"; \
+      download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-smartcn/${LUCENE_CJK_VERSION}/lucene-analysis-smartcn-${LUCENE_CJK_VERSION}.jar"; \
+      download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-icu/${LUCENE_CJK_VERSION}/lucene-analysis-icu-${LUCENE_CJK_VERSION}.jar"; \
+      base_resource_url="${GITHUB_RAW_BASE_URL}/lang/lucene-chinese/src/main/resources/org/carrot2/language/chinese"; \
+      download_resource "${base_resource_url}/chinese-simplified.label-filters.json" "chinese-simplified.label-filters.json"; \
+      download_resource "${base_resource_url}/chinese-simplified.word-filters.json" "chinese-simplified.word-filters.json"; \
+      download_resource "${base_resource_url}/chinese-traditional.label-filters.json" "chinese-traditional.label-filters.json"; \
+      download_resource "${base_resource_url}/chinese-traditional.word-filters.json" "chinese-traditional.word-filters.json"; \
+    )
 
-    if echo "${CARROT2_LANG_EXTENSIONS}" | grep -q -e "cjk" -e "chinese"; then
-        echo "Installing Chinese language pack"
-        download_jar "${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-chinese/${CARROT2_VERSION}/carrot2-lang-lucene-chinese-${CARROT2_VERSION}.jar"
-        download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-smartcn/${LUCENE_CJK_VERSION}/lucene-analysis-smartcn-${LUCENE_CJK_VERSION}.jar"
-        download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-icu/${LUCENE_CJK_VERSION}/lucene-analysis-icu-${LUCENE_CJK_VERSION}.jar"
-        
-        base_resource_url="${GITHUB_RAW_BASE_URL}/lang/lucene-chinese/src/main/resources/org/carrot2/language/chinese"
-        download_resource "${base_resource_url}/chinese-simplified.label-filters.json" "chinese-simplified.label-filters.json"
-        download_resource "${base_resource_url}/chinese-simplified.word-filters.json" "chinese-simplified.word-filters.json"
-        download_resource "${base_resource_url}/chinese-traditional.label-filters.json" "chinese-traditional.label-filters.json"
-        download_resource "${base_resource_url}/chinese-traditional.word-filters.json" "chinese-traditional.word-filters.json"
-    fi
+# Install Japanese language pack if requested
+RUN echo "${CARROT2_LANG_EXTENSIONS}" | grep -q -e "cjk" -e "japanese" && \
+    ( \
+      set -e; \
+      . /build/download_helpers.sh; \
+      echo "Installing Japanese language pack"; \
+      download_jar "${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-japanese/${CARROT2_VERSION}/carrot2-lang-lucene-japanese-${CARROT2_VERSION}.jar"; \
+      download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-kuromoji/${LUCENE_CJK_VERSION}/lucene-analysis-kuromoji-${LUCENE_CJK_VERSION}.jar"; \
+      base_resource_url="${GITHUB_RAW_BASE_URL}/lang/lucene-japanese/src/main/resources/org/carrot2/language/japanese"; \
+      download_resource "${base_resource_url}/japanese.label-filters.json" "japanese.label-filters.json"; \
+      download_resource "${base_resource_url}/japanese.word-filters.json" "japanese.word-filters.json"; \
+    )
 
-    if echo "${CARROT2_LANG_EXTENSIONS}" | grep -q -e "cjk" -e "japanese"; then
-        echo "Installing Japanese language pack"
-        download_jar "${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-japanese/${CARROT2_VERSION}/carrot2-lang-lucene-japanese-${CARROT2_VERSION}.jar"
-        download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-kuromoji/${LUCENE_CJK_VERSION}/lucene-analysis-kuromoji-${LUCENE_CJK_VERSION}.jar"
+# Install Korean language pack if requested
+RUN echo "${CARROT2_LANG_EXTENSIONS}" | grep -q -e "cjk" -e "korean" && \
+    ( \
+      set -e; \
+      . /build/download_helpers.sh; \
+      echo "Installing Korean language pack"; \
+      download_jar "${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-korean/${CARROT2_VERSION}/carrot2-lang-lucene-korean-${CARROT2_VERSION}.jar"; \
+      download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-nori/${LUCENE_CJK_VERSION}/lucene-analysis-nori-${LUCENE_CJK_VERSION}.jar"; \
+      base_resource_url="${GITHUB_RAW_BASE_URL}/lang/lucene-korean/src/main/resources/org/carrot2/language/korean"; \
+      download_resource "${base_resource_url}/korean.label-filters.json" "korean.label-filters.json"; \
+      download_resource "${base_resource_url}/korean.word-filters.json" "korean.word-filters.json"; \
+    )
 
-        base_resource_url="${GITHUB_RAW_BASE_URL}/lang/lucene-japanese/src/main/resources/org/carrot2/language/japanese"
-        download_resource "${base_resource_url}/japanese.label-filters.json" "japanese.label-filters.json"
-        download_resource "${base_resource_url}/japanese.word-filters.json" "japanese.word-filters.json"
-    fi
-
-    if echo "${CARROT2_LANG_EXTENSIONS}" | grep -q -e "cjk" -e "korean"; then
-        echo "Installing Korean language pack"
-        download_jar "${MAVEN_BASE_URL}/org/carrot2/lang/carrot2-lang-lucene-korean/${CARROT2_VERSION}/carrot2-lang-lucene-korean-${CARROT2_VERSION}.jar"
-        download_jar "${MAVEN_BASE_URL}/org/apache/lucene/lucene-analysis-nori/${LUCENE_CJK_VERSION}/lucene-analysis-nori-${LUCENE_CJK_VERSION}.jar"
-
-        base_resource_url="${GITHUB_RAW_BASE_URL}/lang/lucene-korean/src/main/resources/org/carrot2/language/korean"
-        download_resource "${base_resource_url}/korean.label-filters.json" "korean.label-filters.json"
-        download_resource "${base_resource_url}/korean.word-filters.json" "korean.word-filters.json"
-    fi
-fi
-EOF
+# Clean up the helper script
+RUN rm /build/download_helpers.sh
 
 
 ################################################################################
