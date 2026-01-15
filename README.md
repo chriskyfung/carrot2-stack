@@ -1,5 +1,8 @@
 # 🥕 Carrot2 Dockerized Deployment
 
+[![Docker Image Version](https://img.shields.io/docker/v/chriskyfung/carrot2?sort=semver&logo=docker&label=docker%20hub)](https://hub.docker.com/r/chriskyfung/carrot2) ![Docker Image Size](https://img.shields.io/docker/image-size/chriskyfung/carrot2?sort=semver&color=green) ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/chriskyfung/carrot2/latest-cjk?label=cjk%20image%20size&color=yellow) ![Docker Pulls](https://img.shields.io/docker/pulls/chriskyfung/carrot2?color=lightgray)
+[![Carrot2 License](https://img.shields.io/badge/License-BSD_3--Clause-orange.svg)](https://github.com/carrot2/carrot2/blob/master/carrot2.LICENSE)
+
 This project provides a Dockerized setup for deploying Carrot2, focusing on optimization, security, and ease of deployment. It leverages Docker multi-stage builds for efficient image creation, includes optional support for Chinese, Japanese, and Korean (CJK) languages, and integrates with Cloudflare Tunnel for secure exposure.
 
 ## 📜 Project Overview
