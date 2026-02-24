@@ -4,6 +4,9 @@
 # Carrot2-CJK Dockerfile
 # Supports amd64 and arm64 architectures
 #
+# Build arguments:
+#   CARROT2_VARIANT: Set to "cjk" to build with CJK support (or use tag suffix -cjk)
+#
 
 ################################################################################
 # Build stage: download and unpack Carrot2-CJK distribution.
@@ -11,8 +14,11 @@
 FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jdk-jammy AS build
 
 ARG CARROT2_VERSION=4.8.4
-ARG CARROT2_CHECKSUM_SHA256=7b152b3679bf2933944a0145dd21e46301864e0dfa4b1ca077b1c081ccb32799
-ARG CARROT2_URL=https://github.com/chriskyfung/carrot2-cjk/releases/download/release%2F${CARROT2_VERSION}-cjk/carrot2-cjk-${CARROT2_VERSION}.zip
+ARG CARROT2_VARIANT
+ARG CARROT2_CHECKSUM_SHA256=31fc65c15e2f02e46e1c2e629ef72958d234e8d8d0b0dcc169d1409ccfc79002
+ARG CARROT2_CJK_CHECKSUM_SHA256=7b152b3679bf2933944a0145dd21e46301864e0dfa4b1ca077b1c081ccb32799
+ARG CARROT2_URL=https://github.com/carrot2/carrot2/releases/download/release%2F${CARROT2_VERSION}/carrot2-${CARROT2_VERSION}.zip
+ARG CARROT2_CJK_URL=https://github.com/chriskyfung/carrot2-cjk/releases/download/release%2F${CARROT2_VERSION}-cjk/carrot2-cjk-${CARROT2_VERSION}.zip
 
 # Install dependencies for downloading and unpacking
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -21,10 +27,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Download, verify, and unpack Carrot2
+# Select URL based on CARROT2_VARIANT
+# If CARROT2_VARIANT is "cjk", use CARROT2_CJK_URL; otherwise use CARROT2_URL
 WORKDIR /build
-RUN curl -fsSL -o carrot2.zip "${CARROT2_URL}" && \
-    echo "${CARROT2_CHECKSUM_SHA256}  carrot2.zip" | sha256sum -c - && \
+RUN echo "CARROT2_VARIANT: $CARROT2_VARIANT" && \
+    if [ "$CARROT2_VARIANT" = "cjk" ]; then \
+        DOWNLOAD_URL="${CARROT2_CJK_URL}"; \
+        CHECKSUM="${CARROT2_CJK_CHECKSUM_SHA256}"; \
+    else \
+        DOWNLOAD_URL="${CARROT2_URL}"; \
+        CHECKSUM="${CARROT2_CHECKSUM_SHA256}"; \
+    fi && \
+    echo "Downloading from: ${DOWNLOAD_URL}" && \
+    curl -fsSL -o carrot2.zip "${DOWNLOAD_URL}" && \
+    echo "${CHECKSUM}  carrot2.zip" | sha256sum -c - && \
     unzip carrot2.zip && \
     rm carrot2.zip
 

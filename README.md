@@ -21,19 +21,22 @@ The core of this project is to package the Carrot2-CJK application into a lightw
 
 The Docker image can be built directly from the `Dockerfile`. Build arguments can be used to customize the build.
 
-*   `CARROT2_VERSION`: The version of Carrot2-CJK to install (default: `4.8.4`).
-*   `CARROT2_CHECKSUM_SHA256`: The SHA256 checksum of the Carrot2-CJK zip file.
-
 ```bash
-# Build the default version (with CJK support)
-docker build . -t carrot2-cjk:latest
+# Build standard Carrot2 (no CJK support)
+docker build . -t carrot2:4.8.4
 
-# Build a specific version with checksum verification
+# Build with CJK support
 docker build \
-  --build-arg CARROT2_VERSION=4.8.4 \
-  --build-arg CARROT2_CHECKSUM_SHA256=7b152b3679bf2933944a0145dd21e46301864e0dfa4b1ca077b1c081ccb32799 \
-  . -t carrot2-cjk:4.8.4
+  --build-arg CARROT2_VARIANT=cjk \
+  . -t carrot2:4.8.4-cjk
 ```
+
+Build arguments:
+
+*   `CARROT2_VERSION`: The version of Carrot2 to install (default: `4.8.4`).
+*   `CARROT2_VARIANT`: Set to `cjk` for CJK support (default: empty, uses standard Carrot2).
+*   `CARROT2_CHECKSUM_SHA256`: The SHA256 checksum of the standard Carrot2 zip file.
+*   `CARROT2_CJK_CHECKSUM_SHA256`: The SHA256 checksum of the Carrot2-CJK zip file (used when `CARROT2_VARIANT=cjk`).
 
 ### 🏃 Running with Docker Compose
 
@@ -67,6 +70,7 @@ The `compose.yaml` file provides a simple way to run both the Carrot2 service an
     - Non-root user execution (`carrot2` user)
     - Explicit environment variable settings (`JAVA_HOME`, `JAVA_OPTS`)
     - OCI image labels for traceability
+    - `CARROT2_VARIANT` build arg to select standard or CJK distribution
 *   **Checksum Verification:** Ensures the integrity of the downloaded Carrot2-CJK binaries.
 *   **Health Checks:** Integrated into both the `Dockerfile` and `compose.yaml` for robust service monitoring.
 *   **Network Isolation:** Services communicate over a dedicated bridge network (`carrot2-net`).
