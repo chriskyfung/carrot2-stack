@@ -2,12 +2,13 @@
 
 #
 # Carrot2-CJK Dockerfile
+# Supports amd64 and arm64 architectures
 #
 
 ################################################################################
 # Build stage: download and unpack Carrot2-CJK distribution.
 ################################################################################
-FROM eclipse-temurin:21-jdk-jammy AS build
+FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jdk-jammy AS build
 
 ARG CARROT2_VERSION=4.8.4
 ARG CARROT2_CHECKSUM_SHA256=7b152b3679bf2933944a0145dd21e46301864e0dfa4b1ca077b1c081ccb32799
