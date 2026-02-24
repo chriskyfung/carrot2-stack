@@ -10,10 +10,6 @@
 ################################################################################
 FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jdk-jammy AS build
 
-ARG TARGETPLATFORM
-ARG TARGETARCH
-ARG BUILDPLATFORM
-
 ARG CARROT2_VERSION=4.8.4
 ARG CARROT2_CHECKSUM_SHA256=7b152b3679bf2933944a0145dd21e46301864e0dfa4b1ca077b1c081ccb32799
 ARG CARROT2_URL=https://github.com/chriskyfung/carrot2-cjk/releases/download/release%2F${CARROT2_VERSION}-cjk/carrot2-cjk-${CARROT2_VERSION}.zip
@@ -36,9 +32,6 @@ RUN curl -fsSL -o carrot2.zip "${CARROT2_URL}" && \
 # Final stage: create the runtime image.
 ################################################################################
 FROM eclipse-temurin:21-jre-alpine AS final
-
-ARG TARGETPLATFORM
-ARG TARGETARCH
 
 LABEL maintainer="Carrot2 project"
 LABEL org.opencontainers.image.title="Carrot2"
