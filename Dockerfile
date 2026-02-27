@@ -11,7 +11,7 @@
 ################################################################################
 # Build stage: download and unpack Carrot2-CJK distribution.
 ################################################################################
-FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jdk-jammy AS build
+FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk-jammy AS build
 
 ARG CARROT2_VERSION=4.8.4
 ARG CARROT2_VARIANT
@@ -47,7 +47,7 @@ RUN echo "CARROT2_VARIANT: $CARROT2_VARIANT" && \
 ################################################################################
 # Final stage: create the runtime image.
 ################################################################################
-FROM eclipse-temurin:21-jre-alpine AS final
+FROM eclipse-temurin:25-jre-alpine AS final
 
 LABEL org.opencontainers.image.title="Carrot2"
 LABEL org.opencontainers.image.description="Carrot2 is an open source search results clustering engine."
