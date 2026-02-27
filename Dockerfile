@@ -96,4 +96,4 @@ CMD ["./dcs", "--port", "8080"]
 
 # Health check to verify service availability
 HEALTHCHECK --interval=30s --timeout=10s --retries=5 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/service/list || exit 1
+  CMD curl -fsS --head http://localhost:8080/service/list > /dev/null || exit 1
