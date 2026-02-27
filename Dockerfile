@@ -11,7 +11,7 @@
 ################################################################################
 # Build stage: download and unpack Carrot2-CJK distribution.
 ################################################################################
-FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jdk-jammy AS build
+FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk-noble AS build
 
 ARG CARROT2_VERSION=4.8.4
 ARG CARROT2_VARIANT
@@ -47,7 +47,7 @@ RUN echo "CARROT2_VARIANT: $CARROT2_VARIANT" && \
 ################################################################################
 # Final stage: create the runtime image.
 ################################################################################
-FROM eclipse-temurin:21-jre-alpine AS final
+FROM eclipse-temurin:25-jre-noble AS final
 
 LABEL org.opencontainers.image.title="Carrot2"
 LABEL org.opencontainers.image.description="Carrot2 is an open source search results clustering engine."
@@ -96,4 +96,4 @@ CMD ["./dcs", "--port", "8080"]
 
 # Health check to verify service availability
 HEALTHCHECK --interval=30s --timeout=10s --retries=5 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/service/list || exit 1
+  CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e "GET /service/list HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3 && grep -q "HTTP/1.1 2" <&3'
