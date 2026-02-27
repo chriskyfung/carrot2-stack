@@ -49,12 +49,11 @@ RUN echo "CARROT2_VARIANT: $CARROT2_VARIANT" && \
 ################################################################################
 FROM eclipse-temurin:21-jre-alpine AS final
 
-LABEL maintainer="Carrot2 project"
 LABEL org.opencontainers.image.title="Carrot2"
 LABEL org.opencontainers.image.description="Carrot2 is an open source search results clustering engine."
 LABEL org.opencontainers.image.url="https://search.carrot2.org/"
-LABEL org.opencontainers.image.source="https://github.com/chriskyfung/carrot2-cjk"
-LABEL org.opencontainers.image.vendor="Carrot2 project"
+LABEL org.opencontainers.image.source="https://github.com/chriskyfung/carrot2-stack"
+LABEL org.opencontainers.image.authors="Chris K.Y. Fung (@chriskyfung)"
 
 ARG CARROT2_VERSION=4.8.4
 LABEL org.opencontainers.image.version="${CARROT2_VERSION}"
