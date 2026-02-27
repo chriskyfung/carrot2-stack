@@ -96,4 +96,4 @@ CMD ["./dcs", "--port", "8080"]
 
 # Health check to verify service availability
 HEALTHCHECK --interval=30s --timeout=10s --retries=5 \
-  CMD curl -fsS --head http://localhost:8080/service/list > /dev/null || exit 1
+  CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080' || exit 1
