@@ -9,13 +9,11 @@ download_and_verify() {
     local filename=$(basename "$url")
     local output_path="/tmp/${filename}"
 
-    echo "Downloading $filename..."
+    echo "Downloading $filename..." >&2
     curl -fsSL -o "${output_path}" "$url"
 
-    echo "Verifying checksum for $filename..."
-    local actual_checksum=$(sha256sum "${output_path}" | awk '{print $1}')
-
-    if [ "${actual_checksum}" != "${expected_checksum}" ]; then
+    echo "Verifying checksum for $filename..." >&2
+    if ! echo "${expected_checksum}  ${output_path}" | sha256sum -c --status -; then
         echo "Checksum verification failed for ${filename}." >&2
         exit 1
     fi
