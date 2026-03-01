@@ -48,6 +48,23 @@ RUN . /tmp/download_helpers.sh && \
     unzip carrot2.zip && \
     rm carrot2.zip
 
+# Patch Jackson Core vulnerability GHSA-72hv-8253-57qq
+# Replace vulnerable jackson-core-2.20.1.jar with patched version 2.21.1
+RUN . /tmp/download_helpers.sh && \
+    JACKSON_CORE_URL="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.21.1/jackson-core-2.21.1.jar" && \
+    JACKSON_CORE_CHECKSUM="1edd5f2e49dca5f8e4519957c24b7b3050bd1c7ee883920da33cff031ff1f7c0" && \
+    download_and_verify "${JACKSON_CORE_URL}" "${JACKSON_CORE_CHECKSUM}" && \
+    echo "Finding and replacing vulnerable jackson-core jar..." && \
+    for jar in $(find /build -name "jackson-core-2.20.1.jar"); do \
+        dir=$(dirname "$jar"); \
+        echo "Copying jackson-core-2.21.1.jar to: ${dir}/" && \
+        cp /tmp/jackson-core-2.21.1.jar "${dir}/" && \
+        echo "Removing: ${jar}" && \
+        rm "$jar"; \
+    done && \
+    rm /tmp/jackson-core-2.21.1.jar && \
+    echo "Jackson Core patched successfully"
+
 ################################################################################
 # Final stage: create the runtime image.
 ################################################################################
