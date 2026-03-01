@@ -1,16 +1,23 @@
 #!/bin/sh
 set -e
 
-# Usage: download_jar <url>
-# Downloads a JAR file, verifies its sha1 checksum, and places it in LIB_DIR.
-download_jar() {
+# Usage: download_and_verify <url> <checksum>
+# Downloads a file, verifies its sha256 checksum, and outputs the local path.
+download_and_verify() {
     local url="$1"
+    local expected_checksum="$2"
     local filename=$(basename "$url")
-    echo "Downloading $filename"
-    curl -fsSL -o "${LIB_DIR}/${filename}" "$url"
-    curl -fsSL -o "${LIB_DIR}/${filename}.sha1" "$url.sha1"
-    echo "$(cat ${LIB_DIR}/${filename}.sha1)  ${LIB_DIR}/${filename}" | sha1sum -c -
-    rm "${LIB_DIR}/${filename}.sha1"
+    local output_path="/tmp/${filename}"
+
+    echo "Downloading $filename..." >&2
+    curl -fsSL -o "${output_path}" "$url"
+
+    echo "Verifying checksum for $filename..." >&2
+    if ! echo "${expected_checksum}  ${output_path}" | sha256sum -c --status -; then
+        echo "Checksum verification failed for ${filename}." >&2
+        exit 1
+    fi
+    echo "${output_path}"
 }
 
 # Usage: download_resource <url> <filename>

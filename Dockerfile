@@ -27,10 +27,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Copy download helper scripts
+COPY --chmod=0755 scripts/download_helpers.sh /tmp/download_helpers.sh
+
 # Select URL based on CARROT2_VARIANT
 # If CARROT2_VARIANT is "cjk", use CARROT2_CJK_URL; otherwise use CARROT2_URL
 WORKDIR /build
-RUN echo "CARROT2_VARIANT: $CARROT2_VARIANT" && \
+RUN . /tmp/download_helpers.sh && \
+    echo "CARROT2_VARIANT: $CARROT2_VARIANT" && \
     if [ "$CARROT2_VARIANT" = "cjk" ]; then \
         DOWNLOAD_URL="${CARROT2_CJK_URL}"; \
         CHECKSUM="${CARROT2_CJK_CHECKSUM_SHA256}"; \
@@ -39,8 +43,8 @@ RUN echo "CARROT2_VARIANT: $CARROT2_VARIANT" && \
         CHECKSUM="${CARROT2_CHECKSUM_SHA256}"; \
     fi && \
     echo "Downloading from: ${DOWNLOAD_URL}" && \
-    curl -fsSL -o carrot2.zip "${DOWNLOAD_URL}" && \
-    echo "${CHECKSUM}  carrot2.zip" | sha256sum -c - && \
+    LOCAL_FILE=$(download_and_verify "${DOWNLOAD_URL}" "${CHECKSUM}") && \
+    mv "${LOCAL_FILE}" carrot2.zip && \
     unzip carrot2.zip && \
     rm carrot2.zip
 
