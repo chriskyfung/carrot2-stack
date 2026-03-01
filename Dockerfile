@@ -54,15 +54,17 @@ RUN . /tmp/download_helpers.sh && \
     JACKSON_CORE_URL="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.21.1/jackson-core-2.21.1.jar" && \
     JACKSON_CORE_CHECKSUM="1edd5f2e49dca5f8e4519957c24b7b3050bd1c7ee883920da33cff031ff1f7c0" && \
     PATCHED_JAR_PATH=$(download_and_verify "${JACKSON_CORE_URL}" "${JACKSON_CORE_CHECKSUM}") && \
+    echo "${PATCHED_JAR_PATH} downloaded and verified successfully" && \
     echo "Finding and replacing vulnerable jackson-core jar..." && \
-    find /build -name "jackson-core-2.20.1.jar" -print0 | while IFS= read -r -d '' jar; do \
-        dir=$(dirname "$jar"); \
-        echo "Patching ${jar}..." && \
-        cp "${PATCHED_JAR_PATH}" "${dir}/" && \
-        echo "Removing: ${jar}" && \
-        rm "$jar" || exit 1; \
-    done && \
-    rm "${PATCHED_JAR_PATH}" && \  
+    bash -c ' \
+        find /build -name "jackson-core-2.20.1.jar" -print0 | while IFS= read -r -d "" jar; do \
+            dir=$(dirname "$jar"); \
+            echo "Patching ${jar} to ${dir}/..."; \
+            cp "'${PATCHED_JAR_PATH}'" "${dir}/" || { echo "ERROR: Failed to copy patched jar"; exit 1; }; \
+            rm "$jar" || { echo "ERROR: Failed to remove vulnerable jar ${jar}"; exit 1; }; \
+        done || { echo "ERROR: Failed to patch Jackson Core"; exit 1; } \
+    ' && \
+    rm "${PATCHED_JAR_PATH}" && \
     echo "Jackson Core patched successfully"
 
 ################################################################################
