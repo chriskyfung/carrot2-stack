@@ -1,7 +1,7 @@
 # Carrot2 Stack Docker Build Makefile
 # Provides streamlined targets for building and pushing multi-architecture images
 
-.PHONY: help build build-cjk push push-cjk all clean
+.PHONY: help build build-cjk build-local build-cjk-local all clean
 
 # ==============================================================================
 # Configuration
@@ -82,7 +82,7 @@ help:
 	@echo "  PUSH_FLAG=flag   Set push flag (--push or --load) (default: $(PUSH_FLAG))"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make build                    # Push standard:$(VERSION)-1, standard:$(VERSION)-noble-1, standard:latest"
+	@echo "  make build                    # Push standard:$(VERSION), standard:$(VERSION)-noble, standard:latest"
 	@echo "  make build-cjk                # Push CJK:$(VERSION)-cjk, CJK:$(VERSION)-cjk-noble, CJK:latest-cjk"
 	@echo "  make all                      # Push both variants"
 	@echo "  make build-local              # Build standard for local testing"
