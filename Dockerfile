@@ -13,10 +13,10 @@
 ################################################################################
 FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk-noble AS build
 
-ARG CARROT2_VERSION=4.8.4
+ARG CARROT2_VERSION=4.8.5
 ARG CARROT2_VARIANT
-ARG CARROT2_CHECKSUM_SHA256=31fc65c15e2f02e46e1c2e629ef72958d234e8d8d0b0dcc169d1409ccfc79002
-ARG CARROT2_CJK_CHECKSUM_SHA256=7b152b3679bf2933944a0145dd21e46301864e0dfa4b1ca077b1c081ccb32799
+ARG CARROT2_CHECKSUM_SHA256=60a2d69d1a7c0179c8883eec8b85b07048f295e7bf816ab08d7d6f1e6b6938de
+ARG CARROT2_CJK_CHECKSUM_SHA256=2d5641345b481ddfc00983f03a4239c327c7256440ca4f45416beca470a1cdc5
 ARG CARROT2_URL=https://github.com/carrot2/carrot2/releases/download/release%2F${CARROT2_VERSION}/carrot2-${CARROT2_VERSION}.zip
 ARG CARROT2_CJK_URL=https://github.com/chriskyfung/carrot2-cjk/releases/download/release%2F${CARROT2_VERSION}-cjk/carrot2-cjk-${CARROT2_VERSION}.zip
 
@@ -58,8 +58,9 @@ LABEL org.opencontainers.image.description="Carrot2 is an open source search res
 LABEL org.opencontainers.image.url="https://search.carrot2.org/"
 LABEL org.opencontainers.image.source="https://github.com/chriskyfung/carrot2-stack"
 LABEL org.opencontainers.image.authors="Chris K.Y. Fung (@chriskyfung)"
+LABEL org.opencontainers.image.revision=""
 
-ARG CARROT2_VERSION=4.8.4
+ARG CARROT2_VERSION=4.8.5
 LABEL org.opencontainers.image.version="${CARROT2_VERSION}"
 
 # Environment variables
