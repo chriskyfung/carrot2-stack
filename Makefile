@@ -14,7 +14,7 @@ IMAGE_REPO = $(REGISTRY)/$(IMAGE_NAME)
 
 # Version configuration
 # Override with: make build VERSION=4.8.6
-VERSION ?= 4.8.5
+VERSION ?= 4.8.6
 
 # Base image tag components
 BASE_TAG = $(VERSION)

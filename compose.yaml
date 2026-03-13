@@ -1,53 +1,115 @@
+# ==============================================================================
+# Carrot2 Docker Compose Configuration
+# ==============================================================================
+# This configuration deploys Carrot2 with Cloudflare Tunnel integration.
+# All configuration values are centralized below for easy management.
+# Override any value via environment variables or a .env file.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Configuration Variables
+# ------------------------------------------------------------------------------
+# Carrot2 application settings
+x-carrot2:
+  version: "4.8.6"
+  variant: "cjk"
+  checksum_sha256: "6422480da201d7c8615709f28dbfd7e30bc1b98297e71be7b5aac366f157d840"
+  # Image tag format: <name>:<version>-<variant>
+  image_tag: "carrot2:4.8.6-cjk"
+
+# Cloudflare Tunnel settings
+x-cloudflared:
+  image: "cloudflare/cloudflared:latest"
+
+# Network configuration
+x-network:
+  name: "carrot2-net"
+
+# ------------------------------------------------------------------------------
+# Services
+# ------------------------------------------------------------------------------
 services:
+  # --------------------------------------------------------------------------
+  # Carrot2 Search Results Clustering Engine
+  # --------------------------------------------------------------------------
   carrot2:
     build:
       context: .
       args:
-        CARROT2_VERSION: 4.8.5
-        CARROT2_VARIANT: cjk
-        CARROT2_CJK_CHECKSUM_SHA256: 2d5641345b481ddfc00983f03a4239c327c7256440ca4f45416beca470a1cdc5
+        CARROT2_VERSION: ${CARROT2_VERSION}
+        CARROT2_VARIANT: ${CARROT2_VARIANT}
+        CARROT2_CJK_CHECKSUM_SHA256: ${CARROT2_CJK_CHECKSUM_SHA256}
       tags:
-        - carrot2:4.8.5-cjk
-    image: carrot2:4.8.5-cjk
+        - ${CARROT2_IMAGE_TAG}
+    image: ${CARROT2_IMAGE_TAG}
     restart: unless-stopped
+
+    # Persistent storage for Carrot2 data
     volumes:
       - carrot2-data:/opt/carrot2/data
-    # Do NOT publish ports; cloudflared will reach it over the Docker network.
+
+    # Port exposure (internal Docker network only)
+    # Cloudflared accesses Carrot2 over the Docker network, not via host ports
     ports:
       - "8080"
+
+    # JVM runtime configuration
     environment:
-      # Optional JVM sizing
       JAVA_TOOL_OPTIONS: "-Xms512m -Xmx2g"
+
+    # Health check configuration
     healthcheck:
       interval: 1m30s
       timeout: 10s
       retries: 3
       start_period: 30s
       start_interval: 5s
-    networks:
-      - carrot2-net  
 
+    networks:
+      - ${NETWORK_NAME:-carrot2-net}
+
+  # --------------------------------------------------------------------------
+  # Cloudflare Tunnel - Securely exposes Carrot2 to the internet
+  # --------------------------------------------------------------------------
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: ${CLOUDFLARED_IMAGE:-cloudflare/cloudflared:latest}
     restart: unless-stopped
     command: tunnel --no-autoupdate run
+
+    # Tunnel authentication token (loaded from Docker secret)
     environment:
       TUNNEL_TOKEN_FILE: /run/secrets/tunnel_token
+
     secrets:
       - tunnel_token
+
+    # Wait for Carrot2 to be healthy before starting
     depends_on:
       carrot2:
         condition: service_healthy
-    networks:
-      - carrot2-net
 
+    networks:
+      - ${NETWORK_NAME:-carrot2-net}
+
+# ------------------------------------------------------------------------------
+# Networks
+# ------------------------------------------------------------------------------
 networks:
-  carrot2-net:
+  ${NETWORK_NAME:-carrot2-net}:
     driver: bridge
 
+# ------------------------------------------------------------------------------
+# Volumes
+# ------------------------------------------------------------------------------
 volumes:
+  # Persistent storage for Carrot2 data (index, configuration, etc.)
   carrot2-data:
 
+# ------------------------------------------------------------------------------
+# Secrets
+# ------------------------------------------------------------------------------
 secrets:
+  # Cloudflare Tunnel authentication token
+  # Create this file: echo "your-token" > .secrets/tunnel_token.txt
   tunnel_token:
     file: .secrets/tunnel_token.txt
