@@ -7,23 +7,16 @@
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# Configuration Variables
+# Configuration Variables (YAML Anchors)
 # ------------------------------------------------------------------------------
-# Carrot2 application settings
-x-carrot2:
-  version: "4.8.6"
-  variant: "cjk"
-  checksum_sha256: "6422480da201d7c8615709f28dbfd7e30bc1b98297e71be7b5aac366f157d840"
-  # Image tag format: <name>:<version>-<variant>
-  image_tag: "carrot2:4.8.6-cjk"
+# Carrot2 application settings - define once, reference everywhere
+x-carrot2-version: &carrot2-version "4.8.6"
+x-carrot2-variant: &carrot2-variant "cjk"
+x-carrot2-checksum: &carrot2-checksum "6422480da201d7c8615709f28dbfd7e30bc1b98297e71be7b5aac366f157d840"
+x-carrot2-image-tag: &carrot2-image-tag "carrot2:4.8.6-cjk"
 
 # Cloudflare Tunnel settings
-x-cloudflared:
-  image: "cloudflare/cloudflared:latest"
-
-# Network configuration
-x-network:
-  name: "carrot2-net"
+x-cloudflared-image: &cloudflared-image "cloudflare/cloudflared:latest"
 
 # ------------------------------------------------------------------------------
 # Services
@@ -36,12 +29,12 @@ services:
     build:
       context: .
       args:
-        CARROT2_VERSION: ${CARROT2_VERSION}
-        CARROT2_VARIANT: ${CARROT2_VARIANT}
-        CARROT2_CJK_CHECKSUM_SHA256: ${CARROT2_CJK_CHECKSUM_SHA256}
+        CARROT2_VERSION: *carrot2-version
+        CARROT2_VARIANT: *carrot2-variant
+        CARROT2_CJK_CHECKSUM_SHA256: *carrot2-checksum
       tags:
-        - ${CARROT2_IMAGE_TAG}
-    image: ${CARROT2_IMAGE_TAG}
+        - *carrot2-image-tag
+    image: *carrot2-image-tag
     restart: unless-stopped
 
     # Persistent storage for Carrot2 data
@@ -66,13 +59,13 @@ services:
       start_interval: 5s
 
     networks:
-      - ${NETWORK_NAME:-carrot2-net}
+      - carrot2-net
 
   # --------------------------------------------------------------------------
   # Cloudflare Tunnel - Securely exposes Carrot2 to the internet
   # --------------------------------------------------------------------------
   cloudflared:
-    image: ${CLOUDFLARED_IMAGE:-cloudflare/cloudflared:latest}
+    image: *cloudflared-image
     restart: unless-stopped
     command: tunnel --no-autoupdate run
 
@@ -89,13 +82,13 @@ services:
         condition: service_healthy
 
     networks:
-      - ${NETWORK_NAME:-carrot2-net}
+      - carrot2-net
 
 # ------------------------------------------------------------------------------
 # Networks
 # ------------------------------------------------------------------------------
 networks:
-  ${NETWORK_NAME:-carrot2-net}:
+  carrot2-net:
     driver: bridge
 
 # ------------------------------------------------------------------------------
