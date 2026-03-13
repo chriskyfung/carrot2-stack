@@ -23,17 +23,17 @@ The Docker image can be built directly from the `Dockerfile`. Build arguments ca
 
 ```bash
 # Build standard Carrot2 (no CJK support)
-docker build . -t carrot2:4.8.4
+docker build . -t carrot2:4.8.5
 
 # Build with CJK support
 docker build \
   --build-arg CARROT2_VARIANT=cjk \
-  . -t carrot2:4.8.4-cjk
+  . -t carrot2:4.8.5-cjk
 ```
 
 Build arguments:
 
-*   `CARROT2_VERSION`: The version of Carrot2 to install (default: `4.8.4`).
+*   `CARROT2_VERSION`: The version of Carrot2 to install (default: `4.8.5`).
 *   `CARROT2_VARIANT`: Set to `cjk` for CJK support (default: empty, uses standard Carrot2).
 *   `CARROT2_CHECKSUM_SHA256`: The SHA256 checksum of the standard Carrot2 zip file.
 *   `CARROT2_CJK_CHECKSUM_SHA256`: The SHA256 checksum of the Carrot2-CJK zip file (used when `CARROT2_VARIANT=cjk`).
