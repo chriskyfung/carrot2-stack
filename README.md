@@ -19,19 +19,70 @@ The core of this project is to package the Carrot2-CJK application into a lightw
 
 ### 🔧 Building the Docker Image
 
-The Docker image can be built directly from the `Dockerfile`. Build arguments can be used to customize the build.
+#### Using Makefile (Recommended)
+
+A `Makefile` is provided to streamline the build workflow with pre-configured targets for multi-architecture builds.
+
+```bash
+# Build and push standard variant (linux/amd64, linux/arm64)
+make build
+
+# Build and push CJK variant (linux/amd64, linux/arm64)
+make build-cjk
+
+# Build and push both variants
+make all
+
+# Build for local testing (single architecture, no push)
+make build-local
+make build-cjk-local
+```
+
+**Options:**
+
+| Variable   | Description                          | Default        |
+|------------|--------------------------------------|----------------|
+| `VERSION`  | Carrot2 version to build             | `4.8.5`        |
+| `REGISTRY` | Docker registry/username             | `chriskyfung`  |
+| `PUSH_FLAG`| Push flag (`--push` or `--load`)     | `--push`       |
+
+**Examples:**
+
+```bash
+# Build with a different version
+make build VERSION=4.8.6
+
+# Build for local testing without pushing
+make build-local PUSH_FLAG=--load
+
+# Build to a different registry
+make build REGISTRY=myregistry
+```
+
+For a full list of targets and options, run:
+
+```bash
+make help
+```
+
+#### Manual Docker Build
+
+The Docker image can also be built directly using `docker buildx`.
 
 ```bash
 # Build standard Carrot2 (no CJK support)
-docker build . -t carrot2:4.8.5
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t chriskyfung/carrot2:4.8.5 \
+  --push .
 
 # Build with CJK support
-docker build \
+docker buildx build --platform linux/amd64,linux/arm64 \
   --build-arg CARROT2_VARIANT=cjk \
-  . -t carrot2:4.8.5-cjk
+  -t chriskyfung/carrot2:4.8.5-cjk \
+  --push .
 ```
 
-Build arguments:
+**Build arguments:**
 
 *   `CARROT2_VERSION`: The version of Carrot2 to install (default: `4.8.5`).
 *   `CARROT2_VARIANT`: Set to `cjk` for CJK support (default: empty, uses standard Carrot2).
