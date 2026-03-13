@@ -115,7 +115,7 @@ build-local:
 	@echo "Building standard variant (local architecture)..."
 	docker buildx build \
 		--platform local \
-		-t $(IMAGE_REPO):$(TAG_VERSION)-local \
+		-t $(TAG_VERSION)-local \
 		--load \
 		$(CONTEXT)
 
@@ -125,7 +125,7 @@ build-cjk-local:
 	docker buildx build \
 		--platform local \
 		--build-arg CARROT2_VARIANT=cjk \
-		-t $(IMAGE_REPO):$(TAG_CJK_VERSION)-local \
+		-t $(TAG_CJK_VERSION)-local \
 		--load \
 		$(CONTEXT)
 
