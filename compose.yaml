@@ -15,9 +15,6 @@ x-carrot2-variant: &carrot2-variant "cjk"
 x-carrot2-checksum: &carrot2-checksum "6422480da201d7c8615709f28dbfd7e30bc1b98297e71be7b5aac366f157d840"
 x-carrot2-image-tag: &carrot2-image-tag "carrot2:4.8.6-cjk"
 
-# Cloudflare Tunnel settings
-x-cloudflared-image: &cloudflared-image "cloudflare/cloudflared:latest"
-
 # ------------------------------------------------------------------------------
 # Services
 # ------------------------------------------------------------------------------
@@ -65,7 +62,7 @@ services:
   # Cloudflare Tunnel - Securely exposes Carrot2 to the internet
   # --------------------------------------------------------------------------
   cloudflared:
-    image: *cloudflared-image
+    image: cloudflare/cloudflared:latest
     restart: unless-stopped
     command: tunnel --no-autoupdate run
 
@@ -84,18 +81,11 @@ services:
     networks:
       - carrot2-net
 
-# ------------------------------------------------------------------------------
-# Networks
-# ------------------------------------------------------------------------------
 networks:
   carrot2-net:
     driver: bridge
 
-# ------------------------------------------------------------------------------
-# Volumes
-# ------------------------------------------------------------------------------
 volumes:
-  # Persistent storage for Carrot2 data (index, configuration, etc.)
   carrot2-data:
 
 # ------------------------------------------------------------------------------
