@@ -16,9 +16,10 @@ FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk-noble AS build
 ARG CARROT2_VERSION=4.8.6
 ARG CARROT2_VARIANT
 ARG CARROT2_CHECKSUM_SHA256=1f4b4a2b13e681deef6180c86eb6f15f8c03b294b048108504d253fc986fd848
-ARG CARROT2_CJK_CHECKSUM_SHA256=6422480da201d7c8615709f28dbfd7e30bc1b98297e71be7b5aac366f157d840
+ARG CARROT2_CJK_CHECKSUM_SHA256=79e0d8e0d63dfa9428179c695fb719c2c0d9e1002b67191f0d21031de12b87ac
+ARG VERSION_SUFFIX=-1
 ARG CARROT2_URL=https://github.com/carrot2/carrot2/releases/download/release%2F${CARROT2_VERSION}/carrot2-${CARROT2_VERSION}.zip
-ARG CARROT2_CJK_URL=https://github.com/chriskyfung/carrot2-cjk/releases/download/release%2F${CARROT2_VERSION}-cjk/carrot2-cjk-${CARROT2_VERSION}.zip
+ARG CARROT2_CJK_URL=https://github.com/chriskyfung/carrot2-cjk/releases/download/release%2F${CARROT2_VERSION}-cjk${VERSION_SUFFIX}/carrot2-cjk-${CARROT2_VERSION}${VERSION_SUFFIX}.zip
 
 # Install dependencies for downloading and unpacking
 RUN apt-get update && apt-get install -y --no-install-recommends \

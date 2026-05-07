@@ -15,6 +15,7 @@ IMAGE_REPO = $(REGISTRY)/$(IMAGE_NAME)
 # Version configuration
 # Override with: make build VERSION=4.8.6
 VERSION ?= 4.8.6
+VERSION_SUFFIX ?= -1
 
 # Base image tag components
 BASE_TAG = $(VERSION)
@@ -37,8 +38,8 @@ TAG_VERSION_FULL = $(IMAGE_REPO):$(BASE_TAG)-noble
 
 # CJK variant tags
 TAG_CJK_LATEST = $(IMAGE_REPO):latest-cjk
-TAG_CJK_VERSION = $(IMAGE_REPO):$(CJK_TAG)
-TAG_CJK_VERSION_FULL = $(IMAGE_REPO):$(CJK_TAG)-noble
+TAG_CJK_VERSION = $(IMAGE_REPO):$(CJK_TAG)${VERSION_SUFFIX}
+TAG_CJK_VERSION_FULL = $(IMAGE_REPO):$(CJK_TAG)-noble${VERSION_SUFFIX}
 
 # ==============================================================================
 # Build Arguments

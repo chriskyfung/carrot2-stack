@@ -12,8 +12,8 @@
 # Carrot2 application settings - define once, reference everywhere
 x-carrot2-version: &carrot2-version "4.8.6"
 x-carrot2-variant: &carrot2-variant "cjk"
-x-carrot2-checksum: &carrot2-checksum "6422480da201d7c8615709f28dbfd7e30bc1b98297e71be7b5aac366f157d840"
-x-carrot2-image-tag: &carrot2-image-tag "carrot2:4.8.6-cjk"
+x-carrot2-checksum: &carrot2-checksum "79e0d8e0d63dfa9428179c695fb719c2c0d9e1002b67191f0d21031de12b87ac"
+x-carrot2-image-tag: &carrot2-image-tag "carrot2:4.8.6-cjk-1"
 
 # ------------------------------------------------------------------------------
 # Services
