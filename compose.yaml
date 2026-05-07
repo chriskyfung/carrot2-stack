@@ -14,6 +14,7 @@ x-carrot2-version: &carrot2-version "4.8.6"
 x-carrot2-variant: &carrot2-variant "cjk"
 x-carrot2-checksum: &carrot2-checksum "79e0d8e0d63dfa9428179c695fb719c2c0d9e1002b67191f0d21031de12b87ac"
 x-carrot2-image-tag: &carrot2-image-tag "carrot2:4.8.6-cjk-1"
+x-carrot2-version-suffix: &carrot2-version-suffix "-1"
 
 # ------------------------------------------------------------------------------
 # Services
@@ -29,6 +30,7 @@ services:
         CARROT2_VERSION: *carrot2-version
         CARROT2_VARIANT: *carrot2-variant
         CARROT2_CJK_CHECKSUM_SHA256: *carrot2-checksum
+        CARROT2_CJK_VERSION_SUFFIX: *carrot2-version-suffix
       tags:
         - *carrot2-image-tag
     image: *carrot2-image-tag
