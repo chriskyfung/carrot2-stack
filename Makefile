@@ -15,6 +15,7 @@ IMAGE_REPO = $(REGISTRY)/$(IMAGE_NAME)
 # Version configuration
 # Override with: make build VERSION=4.8.6
 VERSION ?= 4.8.6
+CJK_VERSION_SUFFIX ?= -1
 
 # Base image tag components
 BASE_TAG = $(VERSION)
@@ -37,8 +38,8 @@ TAG_VERSION_FULL = $(IMAGE_REPO):$(BASE_TAG)-noble
 
 # CJK variant tags
 TAG_CJK_LATEST = $(IMAGE_REPO):latest-cjk
-TAG_CJK_VERSION = $(IMAGE_REPO):$(CJK_TAG)
-TAG_CJK_VERSION_FULL = $(IMAGE_REPO):$(CJK_TAG)-noble
+TAG_CJK_VERSION = $(IMAGE_REPO):$(CJK_TAG)${CJK_VERSION_SUFFIX }
+TAG_CJK_VERSION_FULL = $(IMAGE_REPO):$(CJK_TAG)${CJK_VERSION_SUFFIX}-noble
 
 # ==============================================================================
 # Build Arguments
@@ -48,7 +49,7 @@ TAG_CJK_VERSION_FULL = $(IMAGE_REPO):$(CJK_TAG)-noble
 BUILD_ARGS_COMMON = --platform $(PLATFORMS)
 
 # CJK-specific build arguments
-BUILD_ARGS_CJK = $(BUILD_ARGS_COMMON) --build-arg CARROT2_VARIANT=cjk
+BUILD_ARGS_CJK = $(BUILD_ARGS_COMMON) --build-arg CARROT2_VARIANT=cjk --build-arg CARROT2_CJK_VERSION_SUFFIX=$(CJK_VERSION_SUFFIX)
 
 # ==============================================================================
 # Docker BuildX Flags
@@ -125,6 +126,7 @@ build-cjk-local:
 	docker buildx build \
 		--platform local \
 		--build-arg CARROT2_VARIANT=cjk \
+		--build-arg CARROT2_CJK_VERSION_SUFFIX=$(CJK_VERSION_SUFFIX) \
 		-t $(TAG_CJK_VERSION)-local \
 		--load \
 		$(CONTEXT)
