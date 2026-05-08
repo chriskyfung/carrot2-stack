@@ -39,7 +39,7 @@ TAG_VERSION_FULL = $(IMAGE_REPO):$(BASE_TAG)-noble
 # CJK variant tags
 TAG_CJK_LATEST = $(IMAGE_REPO):latest-cjk
 TAG_CJK_VERSION = $(IMAGE_REPO):$(CJK_TAG)${CJK_VERSION_SUFFIX }
-TAG_CJK_VERSION_FULL = $(IMAGE_REPO):$(CJK_TAG)${CJK_VERSION_SUFFIX}-noble
+TAG_CJK_VERSION_FULL = $(IMAGE_REPO):$(CJK_TAG)-noble${CJK_VERSION_SUFFIX}
 
 # ==============================================================================
 # Build Arguments
@@ -75,10 +75,12 @@ help:
 	@echo "  build-local  Build standard variant for local architecture only"
 	@echo "  build-cjk-local  Build CJK variant for local architecture only"
 	@echo "  all          Build and push both standard and CJK variants"
+	@echo "  clean        Remove local buildx builder cache"
 	@echo "  help         Display this help message"
 	@echo ""
 	@echo "Options:"
 	@echo "  VERSION=x.x.x    Set Carrot2 version (default: $(VERSION))"
+	@echo "  CJK_VERSION_SUFFIX=-n    Set CJK version suffix (default: $(CJK_VERSION_SUFFIX))"
 	@echo "  REGISTRY=name    Set image registry (default: $(REGISTRY))"
 	@echo "  PUSH_FLAG=flag   Set push flag (--push or --load) (default: $(PUSH_FLAG))"
 	@echo ""
@@ -88,6 +90,8 @@ help:
 	@echo "  make all                      # Push both variants"
 	@echo "  make build-local              # Build standard for local testing"
 	@echo "  make build VERSION=4.8.6      # Build with different version"
+	@echo "  make build-cjk CJK_VERSION_SUFFIX=-2  # Build CJK variant with different suffix"
+	@echo "  make clean                    # Clean buildx cache (use with caution)"
 
 ## build: Build and push standard variant (multi-architecture)
 build:
